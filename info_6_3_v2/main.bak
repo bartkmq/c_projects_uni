@@ -1,0 +1,96 @@
+#include <iostream>
+
+#define LEN 7
+
+using namespace std;
+
+/**
+ * Telephone keypad layout:
+ * 1 2 3
+ * 4 5 6
+ * 7 8 9
+ *   0
+ */
+
+bool valid_pos(int x, int y) { // valid if in 3x3 || 0
+    return (x >= 0 && x < 3 && y >= 0 && y < 3) || (x == 1 && y == 3);
+}
+
+// pos must be valid
+int get_key(int x, int y) {
+    if (valid_pos(x, y)) {
+        if (y < 3) {
+            return y * 3 + x + 1;
+        }
+        else {
+            return 0;
+        }
+    }
+    else {
+        return -1;
+    }
+}
+
+int nr[LEN + 1] = {0};
+
+void recv_jmp(int x, int y, int &possibilities, int n = LEN) {
+    if (n == LEN && x == 1 && y == 3) { // first number can't be key 0
+        return;
+    }
+
+    nr[LEN - n] = get_key(x, y);
+    if (n == 1) { // reached last nr
+
+        for (int i = 0; i < LEN; i++) {
+            if (nr[i] == -1)
+                putchar('E');
+            else
+                printf("%d", nr[i]);
+        }
+        putchar('\n');
+
+        possibilities++;
+        return;
+    }
+
+    int jumps[8][2] = {{1, -2}, {2, -1}, {2, 1}, {1, 2},
+                       {-1, 2}, {-2, 1}, {-2, -1}, {-1, -2}};
+    for (int i = 0; i < 8; i++) {
+        int nx = x + jumps[i][0];
+        int ny = y + jumps[i][1];
+        if (valid_pos(nx, ny)) {
+            recv_jmp(nx, ny, possibilities, n - 1);
+        }
+    }
+};
+
+/**
+ * Ausgabe:
+ * 136	104	136
+ * 168	0	168
+ * 136	104	136
+ *	    168
+ *
+ * Insgesamt: 1256
+ */
+
+int main() {
+    cout << "für n = " << LEN << endl;
+    // print out possibilities per key in a telephone keypad layout
+    int sum = 0;
+    for (int i = 0; i < 4; i++) {
+        for (int j = 0; j < 4; j++) {
+            if (valid_pos(j, i)) {
+                int total = 0;
+                recv_jmp(j, i, total);
+                if (i == 3) cout << "\t";
+                //cout << total << "\t";
+                sum += total;
+            }
+        }
+        //cout << endl;
+    }
+    cout << endl;
+    cout << "Insgesamt: " << sum << endl;
+    return 0;
+}
